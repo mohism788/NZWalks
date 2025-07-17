@@ -34,41 +34,70 @@ namespace NZWalks.API.Repositories
 
         }
 
-        public async Task<List<Walk>> GetAllWalksAsync(string? filterOn = null, string? filterQuery = null)
+        public async Task<List<Walk>> GetAllWalksAsync(string? filterOn = null, string? filterQuery = null,
+                                                        string? sortBy = null, bool? isAscending = true,
+                                                        int pageNumber = 1, int pageSize = 1)
         {
             var walks = _dbContext.Walks
                 .Include(x => x.Difficulty)
                 .Include(x => x.Region)
                 .AsQueryable();
-
+            //filtering
             if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(filterQuery) == false)
             {
                 if (filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(x => x.Name.Contains(filterQuery));
                 }
-
-                if (filterOn.Equals("Distance", StringComparison.OrdinalIgnoreCase))
+                else if (filterOn.Equals("Distance", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(x => x.LengthInKm == double.Parse(filterQuery));
                 }
-
-                if (filterOn.Equals("Difficulty", StringComparison.OrdinalIgnoreCase))
+                else if (filterOn.Equals("Difficulty", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(x=>x.Difficulty.Name.Equals(filterQuery));
                 }
-                if (filterOn.Equals("Region", StringComparison.OrdinalIgnoreCase))
+                else if (filterOn.Equals("Region", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(x => x.Region.Name.Contains(filterQuery));
                 }
-                if (filterOn.Equals("Region Code", StringComparison.OrdinalIgnoreCase))
+                else if (filterOn.Equals("Region Code", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(x => x.Region.Code.Contains(filterQuery));
                 }
 
             }
+            //sorting
+            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            {
+                if (sortBy.Equals("name", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (isAscending == true)
+                    {
+                        walks = walks.OrderBy(x => x.Name);
+                    }
+                    else
+                    {
+                        walks = walks.OrderByDescending(x => x.Name);
+                    }
+                }
+                else if (sortBy.Equals("distance", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (isAscending == true)
+                    {
+                        walks = walks.OrderBy(x => x.LengthInKm);
+                    }
+                    else
+                    {
+                        walks = walks.OrderByDescending(x => x.LengthInKm);
+                    }
+                }
+            }
 
-            return await walks.ToListAsync();
+            //pagination
+            var skipResults = (pageNumber - 1) * pageSize;
+
+            return await walks.Skip(skipResults).Take(pageSize).ToListAsync();
 
             //return await _dbContext.Walks
             //    .Include(x=>x.Difficulty)
