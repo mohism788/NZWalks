@@ -9,11 +9,11 @@ using NZWalks.API.Data;
 
 #nullable disable
 
-namespace NZWalks.API.Migrations
+namespace NZWalks.API.Migrations.NZWalksDb
 {
     [DbContext(typeof(NZWalksDbContext))]
-    [Migration("20250717081242_Seeding Data For Diff and Regions")]
-    partial class SeedingDataForDiffandRegions
+    [Migration("20250718132744_Creating Auth DB")]
+    partial class CreatingAuthDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
