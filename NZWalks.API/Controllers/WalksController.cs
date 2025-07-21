@@ -1,5 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net;
+using System.Runtime.CompilerServices;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.CustomActionFilters;
@@ -24,19 +26,26 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpGet]
-
+        //[Authorize(Roles = "Writer,Reader")]
         public async Task<IActionResult> GetAllWalks([FromQuery] string? filterOn,   [FromQuery] string? filterQuery,
                                                      [FromQuery] string? sortBy,     [FromQuery] bool? isAscending,
                                                      [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 1000)
         {
-            var WalksDomain = await _walkRepo.GetAllWalksAsync(filterOn, filterQuery,sortBy,isAscending?? true,
-                                                                pageNumber, pageSize );
-            var WalkstDto = mapper.Map<List<WalkDto>>(WalksDomain);
-            return Ok(WalkstDto);
+
+
+                var WalksDomain = await _walkRepo.GetAllWalksAsync(filterOn, filterQuery, sortBy, isAscending ?? true,
+                                                                       pageNumber, pageSize);
+                var WalkstDto = mapper.Map<List<WalkDto>>(WalksDomain);
+
+
+                return Ok(WalkstDto);
+            
+            
         }
 
         [HttpGet]
         [Route("{id:Guid}")]
+        [Authorize(Roles = "Writer,Reader")]
         public async Task<IActionResult> GetWalkById([FromRoute] Guid id)
         {
             var walkDomain = await _walkRepo.GetWalkByIdAsync(id);
@@ -48,6 +57,7 @@ namespace NZWalks.API.Controllers
 
         [HttpPost]
         [ValidationModelAttribute]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> CreateWalk([FromBody]AddWalkRequestDto addWalkRequestDto)
         {
             
@@ -64,6 +74,7 @@ namespace NZWalks.API.Controllers
         [HttpPut]
         [Route("{id:Guid}")]
         [ValidationModelAttribute]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> UpdateWalk([FromRoute] Guid id, [FromBody] UpdateWalkRequestDto updateWalkRequestDto)
         {
             
@@ -84,6 +95,7 @@ namespace NZWalks.API.Controllers
 
         [HttpDelete]
         [Route("{id:Guid}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> DeleteWalk([FromRoute] Guid id)
         {
             var walkDomain = await _walkRepo.DeleteWalkAsync(id);
